@@ -1,0 +1,24 @@
+licenses:
+  - name: "Software-A"
+    version: "12"   
+    po_number: 1122
+    po_expiry_date: "2024-09-30" # date in "YYYY-MM-DD"
+    po_renewal_owner: "Microsoft"
+    eol_date: "2024-09-14"
+    eos_date: "2024-12-09"
+    total_capacity: 96
+    current_utilization: 90
+    license_expiry_date: "2024-12-31"
+    vendor_support: "aa@example.com"
+
+  - name: "Software-B"
+    version: "12"   
+    po_number: 1212
+    po_expiry_date: "2199-09-30" # date in "YYYY-MM-DD"
+    po_renewal_owner: "Microsoft"
+    eol_date: "2199-12-09"
+    eos_date: "2199-12-09"
+    total_capacity: 6500
+    current_utilization: 90
+    license_expiry_date: "2024-09-30"
+    vendor_support: "aa@example.com"
