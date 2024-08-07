@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitlab-license-exporter
+  namespace: prod-devsecops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gitlab-license-exporter
+  template:
+    metadata:
+      labels:
+        app: gitlab-license-exporter
+    spec:
+      serviceAccountName: license-mon
+      containers:
+      - image: docker.io/gauravkr19/custom-license-exporter:gitlab-nexus-sonar
+      # - image: quay-registry-quay-prod-quay-enterprise.apps.ocp-prod.du.ae/ciam/gitlab-license-monitor:v1
+        name: gitlab-license-exporter
+        env:
+        - name: VAULT_PATH
+          value: "ngil/tibcomashery/data/gitlab"
+        - name: GITLAB_URL
+          value: "https://gitlab-devsecops-prod.du.ae/api/v4"      
+        - name: VAULT_URL
+          value: "https://vault-ui-prod-devsecops.apps.ocp2-mey.prod.corp.du.ae"  
+        - name: NEXUS_URL
+          value: "https://nexus-prod-devsecops.apps.ocp2-mey.prod.corp.du.ae"  
+        - name: SONAR_URL
+          value: "https://sonar-prod-devsecops.apps.ocp2-mey.prod.corp.du.ae"  
+        - name: authRole
+          value: "license-gl"        
+        - name: authPath
+          value: "auth/jwt/login" 
+        envFrom:
+        - secretRef: 
+            name: license-exporter-secret     
+        ports:
+        - containerPort: 8081
+        resources:
+          limits:
+            cpu: 50m
+            memory: 150Mi
+          requests:
+            cpu: 50m
+            memory: 100Mi            
+      imagePullSecrets:
+      - name: quayciamcred
+      nodeSelector:
+        ngil: use
+  
+
+
+
