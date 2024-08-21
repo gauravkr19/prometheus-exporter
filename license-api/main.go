@@ -3,33 +3,36 @@ package main
 import (
 	"log"
 
-	"net/http"
 	"time"
+    "net/http"
 
 	"github.com/gauravkr19/prometheus-exporters/gitlab"
 	"github.com/gauravkr19/prometheus-exporters/nexus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/gauravkr19/prometheus-exporters/sonar"
+    "github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // Start Prometheus endpoint
 func StartPrometheusEndpoint() {
 	http.Handle("/metrics", promhttp.Handler())
-	log.Println("Starting License exporter server at :8081")
+    log.Println("Starting License exporter server at :8081")
 	log.Fatal(http.ListenAndServe(":8081", nil))
 }
 
 func main() {
 	// GitLab setup
 	gitClient, gitlabToken, vaultClient, vaultKVPath := gitlab.SetupGitLab()
-
-	// Nexus setup
+	
+    // Nexus.Sonar setup
 	nexusClient, nexusConfig := nexus.SetupNexus()
+	sonarClient, sonarConfig := sonar.SetupSonar()
 
-	go StartPrometheusEndpoint()
+    go StartPrometheusEndpoint()
 
 	// Initial license check
 	gitlab.UpdateGitlabLicense(gitClient)
-	go nexus.UpdateNexusLicense(nexusClient, nexusConfig)
+    go nexus.UpdateNexusLicense(nexusClient, nexusConfig)
+    go sonar.UpdateSonarLicense(sonarClient, sonarConfig)
 
 	ticker := time.NewTicker(6 * time.Hour)
 	defer ticker.Stop()
@@ -44,7 +47,7 @@ func main() {
 				Token:     gitlabToken.Token,
 			}
 
-			if token.TokenExpiryDays() <= 2 {
+			if token.TokenExpiryDays() <= 0 {
 				gitlab.RotateTokenAndSetExpiry(gitClient, vaultClient, &token)
 				gitlabToken = gitlab.ReadVaultKV2(vaultClient, vaultKVPath)
 
@@ -53,7 +56,9 @@ func main() {
 			}
 
 			gitlab.UpdateGitlabLicense(gitClient)
-			go nexus.UpdateNexusLicense(nexusClient, nexusConfig)
+            go nexus.UpdateNexusLicense(nexusClient, nexusConfig)
+            go sonar.UpdateSonarLicense(sonarClient, sonarConfig)
 		}
 	}
 }
+
