@@ -1,0 +1,48 @@
+# =========================================================
+# STAGE 1: Builder (Contains Go SDK, source code, & vendor)
+# =========================================================
+FROM golang:1.25.8-alpine AS builder
+
+WORKDIR /app
+
+# Disable network dependency lookups completely for air-gapped stability
+ENV GO111MODULE=on \
+    GOPROXY=off \
+    CGO_ENABLED=0 \
+    GOOS=linux
+
+# Copy dependency files and vendor folder
+COPY go.mod go.sum main.go ./
+COPY vendor/ ./vendor/
+
+# Copy the rest of application source code
+COPY gitlab/ ./gitlab/
+COPY nexus/ ./nexus/
+COPY sonar/ ./sonar/
+
+
+# Build the static binary using ONLY local vendor packages
+RUN go build -mod=vendor \
+    -a -installsuffix cgo \
+    -ldflags="-w -s" \
+    -o /app/main .
+
+# =========================================================
+# STAGE 2: Final Minimal Image (Vendor & Go SDK DISCARDED)
+# =========================================================
+FROM alpine:3.19
+
+WORKDIR /app
+
+# Create a non-root user (Best practice for OpenShift/Kubernetes)
+# RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Copy ONLY the static executable from stage 1
+COPY --from=builder /app/main /app/main
+RUN apk add --no-cache curl
+
+# USER appuser
+
+EXPOSE 8080
+
+ENTRYPOINT ["/app/main"]
