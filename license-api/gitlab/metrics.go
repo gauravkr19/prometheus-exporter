@@ -5,26 +5,26 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/api/client-go"
 )
 
 // License represents the structure of the license information
 type License struct {
-	ID               int             `json:"id"`
+	ID               int64           `json:"id"`
 	Plan             string          `json:"plan"`
 	CreatedAt        *time.Time      `json:"created_at"`
 	StartsAt         *gitlab.ISOTime `json:"starts_at"`
 	ExpiresAt        *gitlab.ISOTime `json:"expires_at"`
-	HistoricalMax    int             `json:"historical_max"`
-	MaximumUserCount int             `json:"maximum_user_count"`
+	HistoricalMax    int64           `json:"historical_max"`
+	MaximumUserCount int64           `json:"maximum_user_count"`
 	Licensee         Licensee        `json:"licensee"`
 	AddOns           AddOns          `json:"add_ons"`
 	Expired          bool            `json:"expired"`
-	Overage          int             `json:"overage"`
-	UserLimit        int             `json:"user_limit"`
-	ActiveUsers      int             `json:"active_users"`
+	Overage          int64           `json:"overage"`
+	UserLimit        int64           `json:"user_limit"`
+	ActiveUsers      int64           `json:"active_users"`
 	DaysUntilExpiry  int
-	RemainingUsers   int
+	RemainingUsers   int64
 }
 
 // Licensee represents the licensee information
