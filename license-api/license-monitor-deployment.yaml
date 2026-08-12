@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitlab-license-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gitlab-license-exporter
+  template:
+    metadata:
+      labels:
+        app: gitlab-license-exporter
+    spec:
+      serviceAccountName: license-mon
+      containers:
+      - image: docker.io/gauravkr19/custom-license-exporter:gitlab-nexus-sonar
+        name: gitlab-license-exporter
+        env:
+        - name: VAULT_PATH
+          value: "secrets/devops/data/gitlab"
+        - name: GITLAB_URL
+          value: "https://gitlab-devsecops.com/api/v4"      
+        - name: VAULT_URL
+          value: "https://vault-ui-prod-devsecops.apps.com"  
+        - name: NEXUS_URL
+          value: "https://nexus-prod-devsecops.apps.com"  
+        - name: SONAR_URL
+          value: "https://sonar-prod-devsecops.apps.com"  
+        - name: authRole
+          value: "license-gl"        
+        - name: authPath
+          value: "auth/jwt/login" 
+        envFrom:
+        - secretRef: 
+            name: license-exporter-secret     
+        ports:
+        - containerPort: 8081
+        resources:
+          limits:
+            cpu: 50m
+            memory: 150Mi
+          requests:
+            cpu: 50m
+            memory: 100Mi            
+      imagePullSecrets:
+      - name: quaycred
+
+  
+
+
+
